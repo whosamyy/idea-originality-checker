@@ -792,3 +792,142 @@ Then STOP.
 
 Do not build the CLI, frontend, originality analysis, or deployment yet.
 Do not commit or push.
+## Runtime user-idea stage prompt (verbatim)
+
+The real YC corpus stage is complete.
+
+Current verified state:
+
+- `yc_startups` contains exactly 1,000 real Y Combinator companies.
+- The collection persists across fresh processes.
+- Re-running the loader adds 0 duplicates.
+- One company is one Chroma item.
+- Semantic retrieval has been tested against the real corpus.
+- Two promising semantic-search examples have been identified:
+  - cattle health/breeding monitoring → Cowlar
+  - remote wireless device connectivity through orbiting equipment → Hubble Network
+
+Now complete ONLY the next stage: allow a user to add a new startup/product idea while the program is running and make it immediately searchable.
+
+Do NOT build the final CLI menu yet.\
+Do NOT build Flask/frontend.\
+Do NOT create an originality percentage.\
+Do NOT add AI/LLM-generated explanations.\
+Do NOT deploy.\
+Do NOT write the final README.\
+Do not commit or push.
+
+\==================================================
+
+1. ADD A USER-SUBMITTED IDEA\
+   \==================================================
+
+Add a small, testable function that lets the program insert a user-created startup idea into the same searchable collection.
+
+A user-created item should contain:
+
+- a unique id
+- a name/title
+- a meaningful description of what the startup/product does
+- metadata identifying it as user-created
+
+For example, metadata can include something like:
+
+source = "user"
+
+Do not require fields that are unnecessary.
+
+The DESCRIPTION must be the text that gets embedded.
+
+Do not hide the meaningful text only in metadata.
+
+Make user-created IDs reliably unique.
+
+Do not use a fixed id like "user1".
+
+Use a simple, understandable approach such as UUIDs.
+
+Explain briefly why duplicate IDs are a problem with Chroma `add()`.
+
+Create one temporary test idea while the program is running.
+
+Use a concept that should be semantically distinctive enough to test retrieval.
+
+Immediately after adding it, query the collection with a paraphrased description that does NOT reuse the important wording.
+
+Verify that the newly added item appears near the top of the results.
+
+Report:
+
+- inserted id
+- stored document
+- search query
+- rank of the newly added item
+- distance
+
+Do not claim success unless you actually run the query.
+
+Exit the Python process completely.
+
+Start a new Python process.
+
+Confirm that:
+
+- the added item still exists
+- collection count increased from 1000 to 1001
+- the paraphrased query can still retrieve it
+
+This must be actually tested.
+
+Because this is a development test, make the test item clearly identifiable as user-created.
+
+After verification, it is okay to leave the item in the collection if that is useful evidence of persistence.
+
+Do not delete real YC records.
+
+Do not recreate the collection.
+
+Structure the code so the runtime-add function can later be called by:
+
+- a CLI
+- or a Flask form
+
+Do not build either interface yet.
+
+Keep the function simple.
+
+For example, it should accept something conceptually like:
+
+name\
+description
+
+and return or expose the generated id.
+
+Do not over-engineer it.
+
+Confirm:
+
+- original 1,000 YC records are unchanged
+- no YC record was overwritten
+- only the new user-created record was added
+
+Append this entire prompt verbatim to `prompt_log.md`.
+
+Do not invent any prompts or development history.
+
+When finished, report:
+
+1. Which file(s) changed.
+2. The runtime-add function you created and what it does.
+3. How unique IDs are generated.
+4. Collection count before adding.
+5. Collection count after adding.
+6. The paraphrased search query used.
+7. The new item's rank and distance.
+8. Whether it remained searchable after restarting.
+9. Whether the original 1,000 YC records remained unchanged.
+10. Any errors encountered.
+
+Then STOP.
+
+Do not build the final analysis, CLI, frontend, or deployment.

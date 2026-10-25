@@ -96,11 +96,17 @@ def main():
     collection = client.get_or_create_collection('yc_startups', embedding_function=embedding)
     before = collection.count()
     prior = collection.get(include=['documents', 'metadatas'])
-    existing = set(prior['ids'])
+    user_ids = {
+        item_id for item_id, metadata in zip(prior['ids'], prior['metadatas'])
+        if item_id.startswith('user:') and metadata.get('source') == 'user'
+    }
+    existing = set(prior['ids']) - user_ids
     expected = {item['id']: item for item in selected}
     if not existing <= set(expected):
         raise ValueError('Existing collection contains IDs outside the deterministic selection.')
     for company_id, document, metadata in zip(prior['ids'], prior['documents'], prior['metadatas']):
+        if company_id in user_ids:
+            continue
         if document != expected[company_id]['document'] or metadata != expected[company_id]['metadata']:
             raise ValueError(f'Existing content differs for {company_id}; stopping without changing it.')
     pending = [item for item in selected if item['id'] not in existing]
@@ -117,8 +123,8 @@ def main():
     batch_seconds = time.perf_counter() - batch_started
     loading_seconds = time.perf_counter() - started
     saved = collection.get(include=['documents'])
-    assert collection.count() == LIMIT, 'This stage must contain exactly 1,000 real records.'
-    assert set(saved['ids']) == {item['id'] for item in selected}
+    assert set(saved['ids']) - user_ids == {item['id'] for item in selected}
+    assert collection.count() == LIMIT + len(user_ids)
     smoke_count = client.get_collection('startup_ideas').count()
     assert smoke_count == 10, 'The original smoke-test collection must remain intact.'
     report = {
@@ -127,6 +133,7 @@ def main():
         'rows_inspected': inspected, 'skipped': skipped, 'selected': len(selected),
         'descriptions_truncated_to_256_tokens': truncated,
         'count_before': before, 'inserted': len(pending), 'count_after': collection.count(),
+        'yc_record_count': LIMIT, 'user_record_count': len(user_ids),
         'unique_ids': len(set(saved['ids'])), 'unique_documents': len(set(saved['documents'])),
         'smoke_collection_count': smoke_count,
         'embedding_and_insertion_seconds': batch_seconds,

@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from uuid import uuid4
 
 SAMPLES = [
     ("focus", "Focus Creatures", "A productivity app that blocks distracting websites during timed work sessions and awards collectible creatures for successful sessions."),
@@ -21,6 +22,32 @@ QUERIES = [
     ("Semantic test 2", "People describe what's sitting in their fridge and get dinner suggestions before their groceries go bad."),
     ("Unrelated query", "Quantum marshmallow nebula dances inside a purple theorem."),
 ]
+
+
+def add_user_idea(name: str, description: str) -> str:
+    """Persist a user idea in yc_startups and return its generated ID.
+
+    The description is embedded; the title and source are metadata. This can
+    be called directly from a future CLI or form handler without running main.
+    """
+    import chromadb
+
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("name must be a nonempty string")
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError("description must be a nonempty string")
+
+    client = chromadb.PersistentClient(
+        path=str(Path(__file__).resolve().parent / "chroma_store")
+    )
+    collection = client.get_collection(name="yc_startups")
+    idea_id = f"user:{uuid4()}"
+    collection.add(
+        ids=[idea_id],
+        documents=[description.strip()],
+        metadatas=[{"company_name": name.strip(), "source": "user"}],
+    )
+    return idea_id
 
 
 def main():
