@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="landing-hero">
+  <span class="eyebrow"><span aria-hidden="true">✦</span> BIG DREAMS START WITH A LITTLE CURIOSITY</span>
+  <h1>How <em>Original</em><br>Is My Idea?<span class="title-star" aria-hidden="true">✧</span></h1>
+  <p class="hero-copy">Describe your startup idea and explore the YC companies<br class="desktop-break"> living nearby in idea-space.</p>
+</section>
+<section class="idea-card" aria-labelledby="form-title">
+  <form action="{{ url_for('analyze') }}" method="post" id="idea-form">
+    <div class="form-heading"><label id="form-title" for="description">Let’s hear your idea</label><span class="tiny-label">THE MESSY FIRST DRAFT IS WELCOME</span></div>
+    {% if error %}<div class="error-message" role="alert">{{ error }}</div>{% endif %}
+    <textarea id="description" name="description" rows="5" required placeholder="Describe your startup idea... e.g. an app that turns messy meeting conversations into organized follow-up tasks." {% if error %}aria-invalid="true"{% endif %}>{{ description }}</textarea>
+    <div class="form-bottom"><span class="form-note">A few thoughtful sentences are all you need.</span><button class="primary-button" type="submit" id="analyze-button">Analyze My Idea <span aria-hidden="true">✦</span></button></div>
+  </form>
+</section>
+<section class="inspiration" aria-label="Example ideas">
+  <p>A little inspiration, if you need it <span aria-hidden="true">↘</span></p>
+  <div class="example-list">
+    <button type="button" class="example" data-example="A device worn by cattle that warns ranchers when an animal may be ill or ready to breed."><span aria-hidden="true">✿</span> A wearable for livestock health</button>
+    <button type="button" class="example" data-example="Software that listens to meetings and automatically turns conversations into organized follow-up tasks."><span aria-hidden="true">✧</span> Meetings into follow-up tasks</button>
+    <button type="button" class="example" data-example="Let small wireless gadgets send updates from remote areas where phones have no signal, through equipment orbiting Earth."><span aria-hidden="true">✴</span> Connectivity for tiny devices</button>
+  </div>
+</section>
+<div class="landing-footnote"><span class="mini-star" aria-hidden="true">✦</span><p>A fresh perspective, not a verdict.<br><span>Explore semantic similarity in a limited YC corpus. No originality scores, just context.</span></p></div>
+<script>
+  const description = document.querySelector('#description');
+  document.querySelectorAll('[data-example]').forEach(button => {
+    button.addEventListener('click', () => { description.value = button.dataset.example; description.setCustomValidity(''); description.focus(); });
+  });
+  document.querySelector('#idea-form').addEventListener('submit', event => {
+    if (!description.value.trim()) { event.preventDefault(); description.setCustomValidity('Please describe your idea.'); description.reportValidity(); return; }
+    const button = document.querySelector('#analyze-button');
+    button.disabled = true; button.textContent = 'Exploring your idea…';
+  });
+  description.addEventListener('input', () => description.setCustomValidity(''));
+  window.addEventListener('pageshow', () => { const button = document.querySelector('#analyze-button'); button.disabled = false; button.textContent = 'Analyze My Idea ✦'; });
+</script>
+{% endblock %}
