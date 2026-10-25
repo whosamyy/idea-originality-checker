@@ -1191,3 +1191,260 @@ When finished, report:
 1. Files changed.
 2. Function(s) created.
 3. Exact structure returned
+
+## CLI integration prompt (verbatim)
+
+The core vector-search and analysis logic is now complete.
+
+Current verified functionality:
+
+- persistent ChromaDB collection
+- 1,000 real YC companies
+- user-created ideas can be added at runtime
+- newly added ideas are searchable immediately and after restart
+- `analyze_idea(description)` retrieves real YC companies and produces a useful competitive-landscape report
+- the analysis distinguishes semantic neighbors from verified competitors
+- no fake originality percentage is used
+
+Now complete ONLY the CLI integration.
+
+Do NOT build Flask or a web frontend yet.
+Do NOT deploy.
+Do NOT write the final README yet.
+Do NOT redesign the analysis logic unless you find a real bug.
+Do not commit or push.
+
+==================================================
+GOAL
+==================================================
+
+Create a simple command-line interface that lets a user actually use the existing functionality end-to-end.
+
+Keep it clean, student-level, and easy to explain.
+
+==================================================
+MENU
+==================================================
+
+When the app starts, show something like:
+
+HOW ORIGINAL IS MY IDEA?
+
+1. Analyze a startup idea
+2. Add a startup idea to the database
+3. Quit
+
+Choose an option:
+
+Do not add unnecessary menu options.
+
+==================================================
+OPTION 1 — ANALYZE AN IDEA
+==================================================
+
+Ask the user to enter a startup/product idea description.
+
+Require a non-empty description.
+
+Pass the description to the existing:
+
+analyze_idea(description)
+
+Do NOT duplicate the retrieval or analysis logic inside the CLI.
+
+Display the result in a readable format.
+
+Show:
+
+- Closest Known Analog
+- top 5 existing YC companies
+- each company's short description
+- industry/subindustry when available
+- Chroma distance
+- market-neighborhood summary
+- similarity-pattern summary
+- cautious deterministic conclusion
+
+Do not dump a raw Python dictionary.
+
+Do not claim that semantic matches are definitely competitors.
+
+==================================================
+OPTION 2 — ADD A NEW IDEA
+==================================================
+
+Ask the user for:
+
+- idea/startup name
+- description
+
+Require both to be non-empty.
+
+Call the existing:
+
+add_user_idea(name, description)
+
+Do not duplicate insertion logic.
+
+After adding, show a confirmation with the generated ID.
+
+Then prove the new idea is immediately searchable by asking whether the user wants to analyze that idea now.
+
+Keep this interaction simple.
+
+==================================================
+OPTION 3 — QUIT
+==================================================
+
+Exit cleanly.
+
+==================================================
+INPUT HANDLING
+==================================================
+
+Do not let invalid menu choices crash the app.
+
+If the user enters something other than 1, 2, or 3:
+
+- show a short error
+- return to the menu
+
+Likewise, do not accept blank startup names or descriptions.
+
+No complicated validation is necessary.
+
+==================================================
+FULL END-TO-END TEST
+==================================================
+
+Actually run the CLI and test this sequence:
+
+1. Start the program.
+2. Analyze an existing idea.
+3. Add a NEW development-test idea.
+4. Immediately analyze that new idea.
+5. Confirm it can be retrieved.
+6. Quit.
+7. Start the program again.
+8. Confirm the added idea still exists/searches correctly.
+9. Quit normally.
+
+Use a clearly labeled development-test idea so it is distinguishable from YC companies.
+
+Do not delete or alter any real YC records.
+
+==================================================
+SEMANTIC EXAMPLE CHECK
+==================================================
+
+Also run at least one of our strong semantic queries through the CLI, not just by calling analysis functions directly.
+
+Use:
+
+"A device worn by cattle that warns ranchers when an animal may be ill or ready to breed."
+
+Confirm that Cowlar still appears as the closest known analog.
+
+This helps prove that the finished user-facing flow still preserves the semantic behavior we tested earlier.
+
+==================================================
+CODE STRUCTURE
+==================================================
+
+Keep database and analysis logic in their existing reusable functions/files.
+
+The CLI should mostly:
+
+- get input
+- call existing functions
+- format output
+
+Do not move all logic into one giant file.
+
+If a new small CLI file is cleaner, create one.
+
+Avoid unnecessary classes or abstractions.
+
+==================================================
+PROMPT LOG
+==================================================
+
+Append this entire prompt verbatim to prompt_log.md.
+
+Do not invent any other prompts or development history.
+
+==================================================
+STOP HERE
+==================================================
+
+When finished, report:
+
+1. Files changed or created.
+2. The exact command I use to start the CLI.
+3. The menu flow.
+4. Results of the end-to-end add/search/restart test.
+5. Whether Cowlar still appeared correctly through the CLI.
+6. Any bugs you found and fixed.
+7. Whether database persistence still works.
+
+Then STOP.
+
+Do not build Flask, frontend, deployment, README, or portfolio integration yet.
+## README placeholder prompt (verbatim)
+
+Create a `README.md` file at the repository root for this HW6 project.
+
+IMPORTANT:\
+Do NOT write the substantive content for me.
+
+The assignment requires me to write the first four required README sections myself in my own words.
+
+Create only the headings and short placeholder notes telling me what I need to write.
+
+Use these sections:
+
+# How Original Is My Idea?
+
+## 1. What the App Does and Why I Chose It
+
+[WRITE THIS MYSELF: 1–2 sentences.]
+
+## 2. What Is Stored in the Vector Database
+
+[WRITE THIS MYSELF: explain where the YC data came from, what one item represents, roughly how many companies are loaded, what text is embedded, and what metadata is stored.]
+
+## 3. How Users Add and Search
+
+[WRITE THIS MYSELF: explain how a user adds a new startup idea and how semantic search/analysis works.]
+
+## 4. Semantic Search Test Queries
+
+[WRITE THIS MYSELF: include the two required queries, what they correctly retrieve, and why keyword search would have failed.]
+
+## 5. How to Obtain and Load the Dataset
+
+[Leave a placeholder for instructions about downloading/loading the Hugging Face YC dataset.]
+
+## 6. Vector Database and Embedding Model
+
+[Leave a placeholder for ChromaDB version/model information and anything that downloads on first run.]
+
+## 7. How to Run the App
+
+[Leave a placeholder for install/run commands.]
+
+## 8. AI Usage
+
+[Leave a placeholder for me to briefly explain which AI tools/models I used and what I used them for.]
+
+Do not fill in sections 1–4.
+
+Do not invent project details.
+
+Do not write polished prose on my behalf.
+
+Do not add an AI-generated documentation section unless I ask later.
+
+Append this prompt verbatim to `prompt_log.md`.
+
+Do not commit or push.
