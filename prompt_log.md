@@ -931,3 +931,263 @@ When finished, report:
 Then STOP.
 
 Do not build the final analysis, CLI, frontend, or deployment.
+
+
+## Retrieval analysis stage prompt (verbatim)
+
+The runtime-add stage is complete and verified.
+
+Current state:
+
+- `yc_startups` contains 1,000 real YC companies plus one clearly identified development test item.
+- Persistence works.
+- User-created ideas can be added with `add_user_idea(name, description)`.
+- A newly added idea becomes searchable immediately and remains searchable after restart.
+- Existing YC data remains unchanged.
+
+Now complete ONLY the next stage: make retrieval genuinely useful.
+
+Do NOT build the final CLI yet.
+Do NOT build Flask/frontend yet.
+Do NOT deploy.
+Do NOT write the final README.
+Do NOT use a hosted LLM or external AI API.
+Do NOT create a fake "originality percentage."
+Do not commit or push.
+
+==================================================
+GOAL
+==================================================
+
+Create a reusable function for analyzing a startup idea against the YC corpus.
+
+Conceptually, I want something like:
+
+analyze_idea(description)
+
+The result should be a useful "competitive landscape" or "similarity report", not just raw Chroma output.
+
+The same function should later be usable from both:
+- a CLI
+- a Flask frontend
+
+==================================================
+1. QUERY THE VECTOR DATABASE
+==================================================
+
+Given a startup/product idea description:
+
+- query `yc_startups`
+- retrieve the top 10 nearest results
+- preserve the actual Chroma distances
+- preserve useful metadata
+
+Do not hide or fabricate the underlying distances.
+
+==================================================
+2. SEPARATE REAL YC COMPANIES FROM USER ITEMS
+==================================================
+
+The collection can now contain both:
+
+- real YC companies
+- user-created ideas
+
+For the competitive analysis, clearly identify which results are real YC companies and which are user-created.
+
+The main "existing companies" section should prioritize real YC companies.
+
+Do not delete user-created items or make them unsearchable.
+
+==================================================
+3. BUILD A USEFUL ANALYSIS RESULT
+==================================================
+
+Return structured information that can later be displayed nicely.
+
+Include:
+
+A. Closest Existing Companies
+
+For the top 5 real YC matches, include:
+- company name
+- short description
+- industry / subindustry if present
+- batch if present
+- YC URL if present
+- distance
+- rank
+
+B. Closest Known Analog
+
+Identify the single closest real YC company and expose it separately.
+
+Do NOT automatically claim that the company is truly a competitor.
+Call it something neutral like:
+
+"Closest known analog"
+
+or
+
+"Closest semantic match"
+
+C. Market Neighborhood
+
+Using the top 10 real YC results, summarize:
+- most common industries/subindustries
+- how many distinct industries appear
+- whether the results are concentrated in one area or spread across many areas
+
+Keep this deterministic and based only on the retrieved metadata.
+
+D. Similarity Pattern
+
+Report simple descriptive statistics about the retrieved distances:
+
+- nearest distance
+- average distance of top 5
+- average distance of top 10
+- gap between rank 1 and rank 5
+
+Do NOT translate these into a percentage.
+
+Do NOT claim a universal meaning like "distance < 1.0 means duplicate."
+
+E. Plain-language conclusion
+
+Generate a SHORT conclusion using deterministic rules, not an LLM.
+
+Examples of acceptable language:
+
+- "This idea has several nearby concepts in the current YC corpus."
+- "The nearest matches are spread across multiple industries."
+- "The corpus contains one notably close analog, while the remaining matches are farther away."
+- "The retrieved neighborhood is relatively diffuse."
+
+The conclusion must be based on the actual retrieval statistics.
+
+Avoid claiming:
+- "your idea is definitely original"
+- "your idea is X% original"
+- "nobody has built this"
+- anything the limited 1,000-company corpus cannot support
+
+==================================================
+4. DO NOT INVENT DISTANCE THRESHOLDS CASUALLY
+==================================================
+
+Before implementing any qualitative labels such as:
+
+"very similar"
+"somewhat similar"
+"sparse"
+
+inspect our existing measured examples:
+
+Strong observed semantic examples:
+- Cowlar: ~0.967
+- Hubble Network: ~1.059
+- Onward: ~0.769
+- Payflow: ~1.213 but ranked below irrelevant results
+
+Nonsense-query neighbors:
+roughly 1.726–1.794 in the 1,000-company test.
+
+These show that distance is informative but imperfect.
+
+If you need thresholds for deterministic wording:
+
+1. Explain exactly why you chose them.
+2. Keep the wording conservative.
+3. Do not present them as universal Chroma thresholds.
+4. Put threshold values in named constants so they can be adjusted later.
+
+If the analysis can work without hard thresholds, prefer that.
+
+==================================================
+5. TEST THE ANALYSIS ON REAL QUERIES
+==================================================
+
+Run the new analysis function on at least these four ideas:
+
+A.
+"A device worn by cattle that warns ranchers when an animal may be ill or ready to breed."
+
+B.
+"Let small wireless gadgets send updates from remote areas where phones have no signal, through equipment orbiting Earth."
+
+C.
+"Software that listens to meetings and automatically turns conversations into organized follow-up tasks."
+
+D.
+"A completely different realistic startup idea of your choice."
+
+For each one, report:
+- closest known analog
+- top 5 real YC companies
+- distances
+- market-neighborhood summary
+- similarity-pattern statistics
+- generated conclusion
+
+Check specifically whether:
+- A still retrieves Cowlar near the top
+- B still retrieves Hubble Network near the top
+- C still retrieves Onward near the top
+
+Do not change the corpus just to force those results.
+
+==================================================
+6. TEST A BAD QUERY
+==================================================
+
+Also analyze:
+
+"Quantum marshmallow nebula dances inside a purple theorem."
+
+Make sure the program does not confidently describe those nearest neighbors as real competitors.
+
+If the deterministic conclusion currently sounds misleading for this query, adjust the logic conservatively.
+
+==================================================
+7. KEEP RAW RETRIEVAL AVAILABLE
+==================================================
+
+Do not throw away the raw Chroma results.
+
+Structure the code so I can understand:
+
+raw retrieval
+→ cleaned real-company matches
+→ computed statistics
+→ useful report
+
+Keep this code readable and student-level.
+
+Avoid unnecessary classes or abstractions.
+
+==================================================
+8. NO FRONTEND YET
+==================================================
+
+Do not create HTML, CSS, Flask routes, or CLI menus yet.
+
+I want the analysis logic tested independently first.
+
+==================================================
+9. PROMPT LOG
+==================================================
+
+Append this entire prompt verbatim to `prompt_log.md`.
+
+Do not invent other prompts or development history.
+
+==================================================
+STOP HERE
+==================================================
+
+When finished, report:
+
+1. Files changed.
+2. Function(s) created.
+3. Exact structure returned
