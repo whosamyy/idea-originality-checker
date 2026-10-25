@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Idea Saved · How Original Is My Idea?{% endblock %}
+{% block content %}
+<section class="saved-wrap">
+  <div class="saved-emblem" aria-hidden="true">✦</div>
+  <span class="eyebrow">A LITTLE SPARK, OFFICIALLY SAVED</span>
+  <h1>Your idea is<br><em>in good company.</em></h1>
+  <p class="hero-copy">It’s saved and searchable. Let’s see what’s nearby.</p>
+  <article class="idea-card saved-card">
+    <span class="tag batch">USER-CREATED · NOW SEARCHABLE</span>
+    <h2>{{ name }}</h2>
+    <p class="saved-description">{{ description }}</p>
+    <div class="saved-id"><span class="tiny-label">YOUR GENERATED ID</span><code>{{ idea_id }}</code></div>
+    <div class="saved-actions"><form method="post" action="{{ url_for('analyze') }}"><input type="hidden" name="description" value="{{ description }}"><button class="primary-button" type="submit">Analyze This Idea <span aria-hidden="true">✦</span></button></form><a class="secondary-button" href="{{ url_for('add_idea') }}">Add Another Idea</a></div>
+    <p class="small-note">This is a user-created idea, not a YC company. Your description is the text used for search.</p>
+  </article>
+</section>
+{% endblock %}

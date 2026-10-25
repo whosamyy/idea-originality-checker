@@ -12,7 +12,10 @@
   <div class="site-shell">
     <header class="site-header">
       <a class="wordmark" href="{{ url_for('index') }}"><span class="brand-star" aria-hidden="true">✳</span> idea, meet world<span class="brand-dot">.</span></a>
-      <span class="header-note"><span class="status-dot"></span> A little curiosity goes a long way</span>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="{{ url_for('index') }}" {% if request.endpoint in ['index', 'analyze'] %}aria-current="page"{% endif %}>Analyze Idea</a>
+        <a href="{{ url_for('add_idea') }}" {% if request.endpoint in ['add_idea', 'idea_added'] %}aria-current="page"{% endif %}>Add an Idea <span aria-hidden="true">♡</span></a>
+      </nav>
     </header>
     <main id="main">{% block content %}{% endblock %}</main>
     <footer class="site-footer"><span>Made for your next “what if.” <span aria-hidden="true">♡</span></span><span>Semantic neighbors. New perspectives.</span></footer>

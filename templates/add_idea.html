@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Add an Idea · How Original Is My Idea?{% endblock %}
+{% block content %}
+<section class="landing-hero add-hero">
+  <span class="eyebrow">✧ A LITTLE ROOM FOR YOUR NEXT BIG THING</span>
+  <h1>Every idea<br>starts <em>somewhere.</em></h1>
+  <p class="hero-copy">Give yours a name and a little space in idea-world.<br class="desktop-break"> Save it now. Explore its neighbors whenever you’re ready.</p>
+</section>
+<section class="idea-card add-form-card" aria-labelledby="add-title">
+  <form method="post" action="{{ url_for('add_idea') }}" id="add-form">
+    <div class="form-heading"><h2 id="add-title">Add an Idea <span aria-hidden="true">♡</span></h2><span class="tag batch">USER-CREATED</span></div>
+    {% if error %}<div class="error-message" role="alert">{{ error }}</div>{% endif %}
+    <div class="field-group"><label for="name">Idea name</label>
+      <input type="text" id="name" name="name" required value="{{ name }}" placeholder="What shall we call it?" {% if errors.get('name') %}aria-invalid="true" aria-describedby="name-error"{% endif %}>
+      {% if errors.get('name') %}<p id="name-error" class="field-error" role="alert">{{ errors.name }}</p>{% endif %}
+    </div>
+    <div class="field-group"><label for="description">Idea description</label>
+      <textarea id="description" name="description" rows="5" required placeholder="What does it do, and who is it for? Tell us the problem you’re solving and how your idea helps." {% if errors.get('description') %}aria-invalid="true" aria-describedby="description-error"{% endif %}>{{ description }}</textarea>
+      {% if errors.get('description') %}<p id="description-error" class="field-error" role="alert">{{ errors.description }}</p>{% endif %}
+    </div>
+    <div class="form-bottom"><span class="form-note">Saved as your idea, separately labeled from YC companies.</span><button class="primary-button" type="submit" id="save-button">Save My Idea <span aria-hidden="true">✦</span></button></div>
+  </form>
+</section>
+<div class="landing-footnote"><span class="mini-star" aria-hidden="true">✦</span><p>From a spark to something searchable.<br><span>Your description becomes searchable as soon as you save.</span></p></div>
+<script>
+  const addForm = document.querySelector('#add-form');
+  addForm.addEventListener('submit', event => {
+    for (const field of [addForm.elements.name, addForm.elements.description]) {
+      if (!field.value.trim()) { event.preventDefault(); field.setCustomValidity('Please enter a non-empty value.'); field.reportValidity(); return; }
+    }
+    const button = document.querySelector('#save-button'); button.disabled = true; button.textContent = 'Saving your idea…';
+  });
+  addForm.querySelectorAll('input, textarea').forEach(field => field.addEventListener('input', () => field.setCustomValidity('')));
+  window.addEventListener('pageshow', () => { const button = document.querySelector('#save-button'); button.disabled = false; button.textContent = 'Save My Idea ✦'; });
+</script>
+{% endblock %}

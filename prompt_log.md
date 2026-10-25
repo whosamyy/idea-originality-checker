@@ -1448,3 +1448,137 @@ Do not add an AI-generated documentation section unless I ask later.
 Append this prompt verbatim to `prompt_log.md`.
 
 Do not commit or push.
+
+## Web Add an Idea prompt (verbatim)
+
+The Flask analysis frontend is now working.
+
+Current state:
+
+- `web_app.py` runs the Flask app.
+- The landing page lets users analyze a startup idea.
+- The results page displays the existing `analyze_idea(description)` report.
+- Existing Chroma and analysis logic remained unchanged.
+- The CLI still works.
+- The database currently contains 1,000 YC companies plus labeled development-test user ideas.
+
+Now add ONLY the web-based "Add an Idea" flow.
+
+Do NOT deploy yet.\
+Do NOT redesign the existing analysis logic.\
+Do NOT change the YC dataset.\
+Do NOT create an originality percentage.\
+Do NOT write the final README.\
+Do not commit or push.
+
+\==================================================
+
+1. ADD NAVIGATION\
+   \==================================================
+
+Add simple navigation to the Flask interface:
+
+Analyze Idea\
+Add an Idea
+
+Keep the existing pastel/cute aesthetic.
+
+Do not add accounts, login, settings, or unnecessary pages.
+
+Create a page where a user can enter:
+
+- Idea name
+- Idea description
+
+Both fields are required.
+
+Use the existing:
+
+add_user_idea(name, description)
+
+Do NOT duplicate the Chroma insertion logic inside the Flask route.
+
+After successfully adding an idea:
+
+Show a polished confirmation card containing:
+
+- idea name
+- generated user ID
+- confirmation that it is now searchable
+
+Include buttons:
+
+"Analyze This Idea ✦"
+
+and
+
+"Add Another Idea"
+
+If the user clicks "Analyze This Idea", use the submitted description with the existing `analyze_idea()` flow.
+
+Handle:
+
+- blank name
+- blank description
+
+with readable inline errors.
+
+Do not allow the app to crash.
+
+Match the existing frontend exactly:
+
+- blush pink
+- cream
+- light lavender
+- rounded cards
+- subtle shadows
+- soft metadata pills
+- small sparkle/heart accents
+- clean responsive layout
+
+Make the Add Idea page feel like part of the same product.
+
+Do not redesign the whole site.
+
+Actually test the web flow:
+
+1. Start Flask.
+2. Open Add an Idea.
+3. Add a clearly labeled development-test idea.
+4. Confirm the returned ID begins with `user:`.
+5. Click/analyze that idea immediately.
+6. Confirm it appears in search results.
+7. Restart Flask.
+8. Confirm the new idea still exists and remains searchable.
+
+Do not delete or alter real YC records.
+
+After implementation, confirm:
+
+- normal Analyze flow still works
+- Cowlar semantic test still works
+- CLI still works
+- YC count remains 1,000
+- only user-created records increased
+- existing user records remain intact
+
+Append this entire prompt verbatim to `prompt_log.md`.
+
+Do not invent any other prompts.
+
+When finished, report:
+
+1. Files changed.
+2. Routes added.
+3. How the new route calls `add_user_idea()`.
+4. Result of the add → analyze → restart test.
+5. Updated total collection count.
+6. Whether Cowlar still works.
+7. Whether the CLI still works.
+8. Any bugs found.
+
+Then STOP.
+
+Do not deploy.\
+Do not modify the portfolio.\
+Do not write the final README.
