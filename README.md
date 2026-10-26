@@ -2,100 +2,76 @@
 
 ## 1. What the App Does and Why I Chose It
 
-My app lets you type in a startup idea and see which Y Combinator companies are the most similar to it. I picked this because I thought it would be interesting to check how original an idea is without just searching for companies that use the exact same words.
-
-Instead of doing a normal keyword search, the app compares the meaning of the idea to descriptions of existing YC companies.
+My app lets you type in a startup idea and see which Y Combinator companies are the most similar to it. I picked this because I thought it would be interesting to compare ideas by meaning instead of just searching for the same words.
 
 ## 2. What Is Stored in the Vector Database
 
-I used the datahiveai/ycombinator-companies dataset from Hugging Face and loaded 1,000 YC companies into the database.
+I used the [datahiveai/ycombinator-companies dataset](https://huggingface.co/datasets/datahiveai/ycombinator-companies) from Hugging Face and loaded 1,000 YC companies.
 
-Each item represents one company. I embed its one-liner, tags, and longer description, and store things like the company name, industry, batch, status, and YC link as metadata.
+Each item represents one company. I embed its one-liner, tags, and longer description, and store the company name, industry, subindustry, batch, status, ID, and YC link as metadata.
 
 User-added ideas are stored in the same collection and marked as user-created.
 
 ## 3. How Users Add and Search
 
-Users can add an idea by entering a name and description. The description is embedded and saved with a unique ID, so it can be searched immediately and still exists after restarting the program.
+Users add an idea by entering a name and description. The description is embedded and saved with a unique ID, so it can be searched immediately and still exists after restarting the program.
 
-For searching, the user just describes their idea normally. The app finds companies that are closest in meaning and shows the closest match, other similar companies, their industries, and some distance information.
-
-It also gives a basic competitive landscape instead of only showing raw search results.
+For searching, users describe their idea normally. The app shows the closest semantic match, other nearby companies, their industries, and distance information. This gives a basic competitive landscape, but the results are not automatically confirmed competitors.
 
 ## 4. Semantic Search Test Queries
 
-One query I tested was:
+**Test 1:**
 
-"A device worn by cattle that warns ranchers when an animal may be ill or ready to breed."
+> A device worn by cattle that warns ranchers when an animal may be ill or ready to breed.
 
-This returned Cowlar as the closest match. Cowlar is also focused on monitoring dairy cows and detecting health and reproduction issues, even though the wording is different.
+Cowlar ranked #1. It monitors dairy cows and detects health and reproduction issues. Words like “cattle,” “ill,” and “breed” express similar meanings to “cows,” “diseases,” and “reproduction.” Exact keyword matching could miss those connections.
 
-Another query was:
+**Test 2:**
 
-"Let small wireless gadgets send updates from remote areas where phones have no signal, through equipment orbiting Earth."
+> Let small wireless gadgets send updates from remote areas where phones have no signal, through equipment orbiting Earth.
 
-This returned Hubble Network near the top. Its description talks about Bluetooth devices, satellites, and working without cellular reception.
+Hubble Network ranked #2. Its description uses “Bluetooth devices,” “satellites,” and “without cellular reception” instead of the query’s wording. This is why keyword matching could be less reliable. I did not run a separate keyword-search comparison.
 
 ## 5. How to Obtain and Load the Dataset
 
-Dataset:
+Use Python 3.13 and run these commands from the project folder. Keep `QDRANT_URL` and `QDRANT_API_KEY` unset for local Chroma mode.
 
-datahiveai/ycombinator-companies
-
-https://huggingface.co/datasets/datahiveai/ycombinator-companies
-
-Install the requirements:
-
+```bash
 python3 -m pip install -r requirements.txt
-
-Then load the data:
-
+mkdir -p data
+curl -L --fail "https://huggingface.co/datasets/datahiveai/ycombinator-companies/resolve/main/yc-companies.csv" -o data/yc-companies.csv
+python3 app.py
 python3 load_yc.py
+```
 
-This loads 1,000 YC companies into ChromaDB. Running it again should not create duplicates.
+Run `app.py` first to create the separate smoke-test collection and download the embedding model. Then `load_yc.py` loads 1,000 real companies into `yc_startups`. Re-running the loader skips existing records. The raw data and local database are ignored by Git.
 
 ## 6. Vector Database and Embedding Model
 
-The local HW6 version uses ChromaDB 1.5.9 with persistent storage.
+I tested the local version with ChromaDB 1.5.9 and its default all-MiniLM-L6-v2 embedding model. It saves data in `chroma_store/`. The first run needs internet to download the model; later local searches use the cached copy.
 
-For embeddings, I use Chroma's default all-MiniLM-L6-v2 model. The company one-liner, tags, and description are embedded together.
-
-A smaller Chroma distance means two results are closer in the embedding space, but I do not treat the distance as an originality percentage.
-
-For the public Vercel deployment, I use Qdrant Cloud instead of local Chroma storage. The local version still defaults to ChromaDB.
+Lower Chroma distances mean closer embeddings, not an originality percentage. The public app uses Qdrant Cloud with cloud embeddings when both `QDRANT_URL` and `QDRANT_API_KEY` are set. Its cosine scores and distances are labeled separately from Chroma’s.
 
 ## 7. How to Run the App
 
-Install dependencies:
+After the setup above, run the CLI:
 
-python3 -m pip install -r requirements.txt
-
-Load the YC data if needed:
-
-python3 load_yc.py
-
-Run the CLI:
-
+```bash
 python3 cli.py
+```
 
-Or run the Flask version:
+Or start Flask:
 
+```bash
 python3 web_app.py
+```
 
-Then open:
+Open [http://127.0.0.1:5001](http://127.0.0.1:5001) and keep the terminal running.
 
-http://127.0.0.1:5001
-
-Live demo:
-
-https://idea-originality-checker.vercel.app
+[Live demo](https://idea-originality-checker.vercel.app)
 
 ## 8. AI Usage
 
-I used Codex for coding and debugging, and ChatGPT mostly for planning what to build next and writing prompts.
+I used Codex for coding, debugging, and README edits, and ChatGPT mostly for planning what to build next and writing prompts.
 
-I built the project in smaller steps: first testing ChromaDB with fake data, then loading real YC companies, adding user ideas, building the analysis, and finally making the CLI and Flask frontend.
-
-I manually checked the search results, database counts, persistence, duplicate handling, and the final app flow.
-
-My actual prompts are included in prompt_log.md.
+I built the project in smaller steps, from testing Chroma with sample data to loading real companies and making the CLI and Flask frontend. I checked search results, counts, persistence, duplicate handling, and the app flow. My prompts are in [prompt_log.md](prompt_log.md).
