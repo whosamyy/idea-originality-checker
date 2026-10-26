@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "web_app.py": {
+      "includeFiles": "templates/**",
+      "excludeFiles": "{chroma_store/**,data/**,tests/**,seed_qdrant.py,load_yc.py,verify_*.py,cli.py,**/__pycache__/**,**/*.md,.env,.env.*,public/**,.venv/**,venv/**}"
+    }
+  }
+}

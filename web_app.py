@@ -6,7 +6,8 @@ from analysis import analyze_idea
 from app import add_user_idea
 from vector_store import get_user_record
 
-app = Flask(__name__)
+# Vercel serves public/static via its CDN; Flask serves the same URL locally.
+app = Flask(__name__, static_folder='public/static', static_url_path='/static')
 
 
 @app.get('/')
@@ -23,7 +24,7 @@ def analyze():
     try:
         report = analyze_idea(description)
     except Exception:
-        app.logger.exception('Idea analysis failed')
+        app.logger.error('Idea analysis failed')
         return render_template('index.html', description=description,
                                error='We couldn’t build your report right now. Please try again. If this continues, check that the selected database is available.'), 503
     return render_template('results.html', report=report)
@@ -45,7 +46,7 @@ def add_idea():
             try:
                 idea_id = add_user_idea(name, description)
             except Exception:
-                app.logger.exception('Adding a user idea failed')
+                app.logger.error('Adding a user idea failed')
                 return render_template('add_idea.html', name=name, description=description,
                                        errors={}, error='We couldn’t save your idea right now. Please try again.'), 503
             # Refreshing the confirmation page must not insert another item.
@@ -61,7 +62,7 @@ def idea_added(idea_id):
     try:
         item = get_user_record(idea_id)
     except Exception:
-        app.logger.exception('Reading a user idea failed')
+        app.logger.error('Reading a user idea failed')
         return render_template('add_idea.html', name='', description='', errors={},
                                error='We couldn’t open the confirmation right now. Please try again.'), 503
     if item is None:

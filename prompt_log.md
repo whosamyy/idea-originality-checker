@@ -1874,3 +1874,80 @@ When finished, report:
 
 Do NOT deploy.
 Do NOT commit or push yet.
+## Final Vercel deployment preparation prompt (verbatim)
+
+The Qdrant backend is now fully verified.
+
+Current state:
+
+- Local/HW6 mode uses ChromaDB and still works.
+- Public/deployment mode uses Qdrant when QDRANT_URL and QDRANT_API_KEY are present.
+- Qdrant contains 1,000 YC companies plus one test user idea.
+- Cowlar, Hubble Network, Onward, and user-added persistence all work through Qdrant.
+- The Flask frontend works locally.
+- A Vercel entrypoint/configuration has already been added.
+
+Now do ONLY the final Vercel deployment preparation.
+
+Do NOT change the working vector-search behavior.\
+Do NOT change Qdrant data.\
+Do NOT deploy for me.\
+Do NOT commit or push.
+
+1. Inspect the current Vercel entrypoint/configuration and confirm Vercel can import a top-level Flask variable named `app`.
+2. Confirm the Flask static CSS and templates will work correctly on Vercel.
+3. Inspect the production dependency situation.
+
+For the Vercel/Qdrant path, I only want dependencies actually needed by the public app, such as:
+
+- Flask
+- qdrant-client
+- whatever small runtime dependencies the current code truly imports
+
+The deployed Vercel function should NOT need:
+
+- chromadb
+- onnxruntime
+- local embedding packages
+- raw YC dataset loading libraries
+- test-only dependencies
+
+Do NOT remove those from the local HW6 setup.
+
+Create the cleanest separate production dependency setup supported by the current Vercel Python runtime.
+
+4. Make sure the Vercel version does NOT attempt to:
+
+- load local Chroma
+- create local Chroma storage
+- download the YC dataset
+- seed Qdrant
+- run ONNX embeddings
+
+when QDRANT_URL and QDRANT_API_KEY are present.
+
+5. Make sure `seed_qdrant.py` is never executed as part of the web app startup.
+6. Make sure secrets are only read from:
+
+- QDRANT_URL
+- QDRANT_API_KEY
+
+and are never logged.
+
+7. Check that `python3 web_app.py` still works locally in Chroma mode after any deployment-prep changes.
+8. Append this prompt verbatim to prompt_log.md.
+
+When finished, report:
+
+- files changed
+- exact Vercel entrypoint
+- exact production dependencies
+- whether static/template serving is ready
+- whether local Chroma still works
+- whether the Vercel deployment should now be ready
+- any remaining warning
+
+Then STOP.
+
+Do not deploy.\
+Do not commit or push.
