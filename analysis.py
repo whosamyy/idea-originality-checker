@@ -1,10 +1,9 @@
 """Reusable local retrieval analysis; no interface or LLM calls."""
 
 from collections import Counter
-from pathlib import Path
 from statistics import mean
 
-import chromadb
+from vector_store import retrieve_idea
 
 TOP_RESULTS = 10
 DISPLAY_COMPANIES = 5
@@ -37,6 +36,10 @@ def clean_matches(raw):
             'batch': metadata.get('batch'), 'yc_url': metadata.get('yc_url'),
             'metadata': metadata, 'distance': distance,
         })
+    if 'scores' in raw:
+        for match, score in zip(matches, raw['scores'][0]):
+            match['score'] = score
+            match['score_metric'] = 'cosine_similarity'
     return matches
 
 
@@ -102,28 +105,15 @@ def analyze_idea(description: str) -> dict:
     if not isinstance(description, str) or not description.strip():
         raise ValueError('description must be a nonempty string')
     description = description.strip()
-    client = chromadb.PersistentClient(path=str(Path(__file__).resolve().parent / 'chroma_store'))
-    collection = client.get_collection('yc_startups')
-    records = collection.get(include=['metadatas'])
-    real_ids = [item_id for item_id, metadata in zip(records['ids'], records['metadatas'])
-                if item_id.startswith('yc:') and (metadata or {}).get('company_id')
-                and (metadata or {}).get('source') != 'user']
-    # One query preserves mixed retrieval. The other guarantees up to 10 real
-    # companies even when many user ideas rank above them. No records change.
-    raw_all = collection.query(
-        query_texts=[description], n_results=min(TOP_RESULTS, collection.count()),
-        include=['documents', 'metadatas', 'distances'],
-    ) if collection.count() else {'ids': [[]], 'documents': [[]], 'metadatas': [[]], 'distances': [[]]}
-    raw_real = collection.query(
-        query_texts=[description], ids=real_ids, n_results=min(TOP_RESULTS, len(real_ids)),
-        include=['documents', 'metadatas', 'distances'],
-    ) if real_ids else {'ids': [[]], 'documents': [[]], 'metadatas': [[]], 'distances': [[]]}
+    retrieval = retrieve_idea(description, TOP_RESULTS)
+    raw_all, raw_real = retrieval['raw_all'], retrieval['raw_real']
     all_matches = clean_matches(raw_all)
     real_matches = clean_matches(raw_real)
     neighborhood, pattern, conclusion = summarize_matches(real_matches)
     return {
         'query': description, 'collection': 'yc_startups',
-        'collection_count': collection.count(), 'yc_record_count': len(real_ids),
+        'collection_count': retrieval['collection_count'], 'yc_record_count': retrieval['yc_record_count'],
+        'backend': retrieval['backend'], 'scoring': retrieval['scoring'],
         'raw_retrieval': {'all_items': raw_all, 'real_companies': raw_real},
         'all_matches': all_matches,
         'user_created_matches': [m for m in all_matches if m['source'] == 'user'],

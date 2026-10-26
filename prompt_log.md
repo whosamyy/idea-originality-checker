@@ -1582,3 +1582,295 @@ Then STOP.
 Do not deploy.\
 Do not modify the portfolio.\
 Do not write the final README.
+
+
+## Optional Qdrant backend prompt (verbatim)
+
+My Qdrant Cloud connection is working successfully.
+
+My current shell already has:
+
+QDRANT_URL
+QDRANT_API_KEY
+
+set as environment variables.
+
+IMPORTANT:
+
+My existing HW6 project is complete and uses ChromaDB locally.
+
+DO NOT replace ChromaDB.
+DO NOT remove ChromaDB.
+DO NOT change the default local HW6 behavior.
+DO NOT delete or modify my existing `chroma_store`.
+
+I want:
+
+LOCAL / HW6 VERSION:
+Flask + CLI → ChromaDB
+
+PUBLIC DEPLOYMENT VERSION:
+Vercel Flask app → Qdrant Cloud
+
+Do NOT deploy to Vercel yet.
+Do NOT commit or push yet.
+
+==================================================
+1. INSPECT THE CURRENT PROJECT
+==================================================
+
+Inspect:
+
+- app.py
+- analysis.py
+- web_app.py
+- load_yc.py
+- cli.py
+- requirements.txt
+
+Understand exactly how:
+
+- Chroma is initialized
+- the `yc_startups` collection is accessed
+- semantic search is performed
+- `add_user_idea(name, description)` works
+- `analyze_idea(description)` works
+- Flask calls the existing functions
+
+Do not rewrite unrelated code.
+
+==================================================
+2. BACKEND SELECTION
+==================================================
+
+Keep Chroma as the DEFAULT.
+
+Use Qdrant only when BOTH environment variables exist:
+
+QDRANT_URL
+QDRANT_API_KEY
+
+Conceptually:
+
+if QDRANT_URL and QDRANT_API_KEY:
+    use Qdrant
+else:
+    use Chroma
+
+Keep the code simple and student-readable.
+
+A small helper file such as `vector_store.py` is okay if it makes this cleaner.
+
+==================================================
+3. QDRANT CLIENT
+==================================================
+
+Use the official `qdrant-client` package.
+
+For Qdrant Cloud, create the client with:
+
+cloud_inference=True
+
+Use this embedding model:
+
+sentence-transformers/all-minilm-l6-v2
+
+Do NOT run local ONNX/FastEmbed for the Qdrant/Vercel path.
+
+Never print or store the API key.
+
+==================================================
+4. PRESERVE THE SAME DATA MODEL
+==================================================
+
+For YC companies, preserve:
+
+- stable company ID
+- searchable description
+- company name
+- industry
+- subindustry
+- batch
+- status
+- YC URL
+- source marker
+
+For user-created ideas, preserve:
+
+- unique user ID
+- name
+- description
+- source="user"
+
+Keep enough metadata/payload data so the existing Flask results page can still display the same information.
+
+==================================================
+5. CREATE `seed_qdrant.py`
+==================================================
+
+Create a separate script named:
+
+seed_qdrant.py
+
+Its job is to upload the same 1,000 YC companies into Qdrant.
+
+It should:
+
+- create the Qdrant collection if it does not exist
+- use Qdrant Cloud Inference
+- use `sentence-transformers/all-minilm-l6-v2`
+- upload in batches
+- preserve stable IDs
+- avoid duplicates on rerun
+- print progress
+- print the final collection count
+
+Do NOT seed Qdrant whenever Flask starts.
+
+I should run `seed_qdrant.py` manually once.
+
+Do NOT upload my local development-test user ideas.
+
+==================================================
+6. KEEP EXISTING FUNCTIONS
+==================================================
+
+Keep these existing interfaces working:
+
+add_user_idea(name, description)
+
+analyze_idea(description)
+
+They should automatically use:
+
+- Chroma when QDRANT_URL/QDRANT_API_KEY are absent
+- Qdrant when both are present
+
+The Flask routes should not need separate Qdrant-specific versions.
+
+==================================================
+7. HANDLE QDRANT SEARCH RESULTS CORRECTLY
+==================================================
+
+Qdrant scoring may not have the exact same meaning/direction as Chroma distance.
+
+Do NOT pretend Qdrant scores are Chroma distances.
+
+Adapt the internal result format so the existing analysis can still work, while preserving the real Qdrant score/metric.
+
+Do NOT invent an originality percentage.
+
+==================================================
+8. USER IDEA PERSISTENCE
+==================================================
+
+When Qdrant is active:
+
+add_user_idea()
+
+must save new ideas into Qdrant.
+
+They must:
+
+- be searchable immediately
+- survive Flask restarts
+- remain stored remotely
+- be marked as source="user"
+
+==================================================
+9. REQUIREMENTS
+==================================================
+
+Add `qdrant-client` to requirements.txt.
+
+Do NOT remove Chroma dependencies yet.
+
+If the production Vercel bundle later needs a smaller dependency file, tell me what to do instead of removing local HW6 dependencies.
+
+==================================================
+10. LOCAL CHROMA REGRESSION TEST
+==================================================
+
+Temporarily test with QDRANT_URL and QDRANT_API_KEY unset.
+
+Verify:
+
+- Chroma is selected
+- CLI still works
+- Flask still works
+- Cowlar semantic query still works
+- existing local user ideas still work
+- the Chroma collections remain unchanged
+
+==================================================
+11. QDRANT TEST
+==================================================
+
+Then test with my current QDRANT_URL and QDRANT_API_KEY environment variables.
+
+First confirm the Qdrant connection.
+
+Then run:
+
+python3 seed_qdrant.py
+
+Verify exactly 1,000 YC records are present.
+
+Then run the Flask app using Qdrant and test:
+
+1. Cowlar semantic query
+2. Hubble Network semantic query
+3. one normal startup query
+4. Add an Idea
+5. immediately analyze that idea
+6. stop Flask
+7. restart Flask
+8. confirm that user-added idea is still searchable
+
+Do not alter my local Chroma database during these tests.
+
+==================================================
+12. VERCEL PREPARATION
+==================================================
+
+Prepare the Flask app so Vercel can import a top-level Flask variable named:
+
+app
+
+Do not unnecessarily restructure the application.
+
+Keep this command working locally:
+
+python3 web_app.py
+
+If Vercel needs a small entry file or configuration file, add the minimum needed.
+
+Do NOT deploy yet.
+
+==================================================
+13. PROMPT LOG
+==================================================
+
+Append this entire prompt verbatim to prompt_log.md.
+
+Do not include secret values.
+
+==================================================
+STOP
+==================================================
+
+When finished, report:
+
+1. Files created or changed.
+2. How backend selection works.
+3. Whether local Chroma still works unchanged.
+4. Qdrant collection count.
+5. Whether Cowlar works through Qdrant.
+6. Whether Hubble Network works through Qdrant.
+7. Whether a user-added idea persists after restart.
+8. Any Qdrant-vs-Chroma scoring differences.
+9. What still needs to be done before Vercel deployment.
+10. Any dependency-size concerns for Vercel.
+
+Do NOT deploy.
+Do NOT commit or push yet.

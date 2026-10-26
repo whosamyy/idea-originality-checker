@@ -1,7 +1,5 @@
 """Small interactive interface for the existing idea-search functions."""
 
-from chromadb.errors import ChromaError
-
 from analysis import analyze_idea
 from app import add_user_idea
 
@@ -19,6 +17,11 @@ def show_report(report):
     """Format an analysis result without changing retrieval or statistics."""
     print('\nCOMPETITIVE LANDSCAPE')
     print('Distances are shown to 6 decimal places; lower means closer.')
+    print(report['scoring']['note'])
+    if report['backend'] == 'qdrant':
+        print('Raw Qdrant cosine scores (higher is closer):')
+        for match in report['closest_existing_companies']:
+            print(f"  {match['company_name']}: {match['score']:.6f}")
     analog = report['closest_known_analog']
     print('\nClosest Known Analog')
     if analog:
@@ -96,7 +99,7 @@ def main():
                     print('Please answer y or n.')
                 if answer in ('y', 'yes'):
                     show_report(analyze_idea(description))
-        except (ChromaError, ValueError, OSError, RuntimeError) as error:
+        except Exception as error:
             print(f'Could not complete that operation: {error}')
 
 
